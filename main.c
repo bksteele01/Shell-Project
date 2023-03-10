@@ -3,8 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 
-enum cmds {CD=0, PWD=1};
-char *cmdstr[] = {"cd", "pwd"};
+enum cmds {CD=0, PWD=1, LS=2};
+char *cmdstr[] = {"cd", "pwd", "ls"};
 
 void split_up2(char* command, char** params, int* paramnum);
 int execute(char** params, int paramnum);
@@ -46,9 +46,15 @@ int execute(char** params, int paramnum){
     switch(i){
         case CD:
             printf("you selected cd\n");
+            if(chdir(params[1]) < 0){
+                fprintf(stderr, "cannot cd %s\n", params[1]);
+            }
             break;
         case PWD:
             printf("you selected pwd\n");
+            break;
+        case LS:
+            printf("you selected ls\n");
             break;
     }
 }
