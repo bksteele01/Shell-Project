@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "cat.h"
+#include <dirent.h>
 
-enum cmds {CD=0, PWD=1, LS=2};
-char *cmdstr[] = {"cd", "pwd", "ls"};
+enum cmds {CD=0, PWD=1, LS=2, CAT=3};
+char *cmdstr[] = {"cd", "pwd", "ls", "cat"};
 
 void split_up2(char* command, char** params, int* paramnum);
 int execute(char** params, int paramnum);
@@ -55,7 +57,21 @@ int execute(char** params, int paramnum){
             break;
         case LS:
             printf("you selected ls\n");
+            struct dirent *direct;
+            DIR *dr = opendir(".");
+            if (dr == NULL)
+            {
+                printf("Could not open current directory" );
+                return 0;
+            }
+            while ((direct = readdir(dr)) != NULL)
+                    printf("%s\n", direct->d_name);
+        
+            closedir(dr);
             break;
+        case CAT:
+            printf("you selected cat\n");
+            cat(params[1]);
     }
 }
 
