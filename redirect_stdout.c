@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
      */
     dup2(infd,  0);
     dup2(outfd, 1);
+    printf("XXX\n");
 
     char line[100];
     fgets(line, 100, stdin);

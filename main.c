@@ -40,6 +40,7 @@ void split_up2(char* command, char** params, int* paramnum){
 int execute(char** params, int paramnum){
     int ncmds = sizeof(cmdstr) / sizeof(char *);
     int i;
+
     for(i=0;i<ncmds;i++){
         if(strcmp(params[0], cmdstr[i]) == 0){
             break;
@@ -71,8 +72,12 @@ int execute(char** params, int paramnum){
             break;
         case CAT:
             printf("you selected cat\n");
-            cat(params[1]);
+            if(strcmp(params[2], ">") == 0){
+                cat(params[1], '>', params[3]);
+            }
+            cat(params[1], ' ', " ");
     }
+    
 }
 
 

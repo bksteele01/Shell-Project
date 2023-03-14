@@ -1,1 +1,1 @@
-int cat(char* file);
+int cat(char* file, char operator, char* redirfile);
