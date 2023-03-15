@@ -4,26 +4,28 @@
 #include <unistd.h>
 #include <stdlib.h> 
 #include <fcntl.h>
+#include<sys/wait.h>
 
 
 int cat(char* file, char operator, char* redirfile){
-    
-
+    int pid = fork();
+    if(pid < 0){
+        printf("fork failed\n");
+    }
     FILE *catfile;
     catfile = fopen(file, "r");
-    if(catfile == NULL){
+    if(catfile == NULL && pid > 0){
         printf("file invalid\n");
         return 0;
     }
     char characters = fgetc(catfile);
-    if(operator == ' '){
+    if(operator == ' ' && pid > 0){
         while(characters != EOF){
             printf("%c", characters);
             characters = fgetc(catfile);
         }
     }
-
-    if(operator == '>'){
+    if(operator == '>' && pid == 0){
         int pid, status;
         int infd, outfd;
         if ((infd = open(file, O_RDONLY, 0644)) < 0) {
@@ -40,13 +42,16 @@ int cat(char* file, char operator, char* redirfile){
             printf("%c", characters);
             characters = fgetc(catfile);
         }
-        printf("XXX\n");
-        printf("XXXXXXX\n");
         char line[100];
         fgets(line, 100, stdin);
         fclose(catfile);
         exit(1);
-        return(1);
+    }
+    if(pid == 0){
+        exit(1);
+    }
+    if(pid > 0){
+        wait(NULL);
     }
     fclose(catfile);
     return 1;

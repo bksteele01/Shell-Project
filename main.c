@@ -3,10 +3,11 @@
 #include <string.h>
 #include <unistd.h>
 #include "cat.h"
+#include "ls.h"
 #include <dirent.h>
 
-enum cmds {CD=0, PWD=1, LS=2, CAT=3};
-char *cmdstr[] = {"cd", "pwd", "ls", "cat"};
+enum cmds {CD=0, PWD=1, LS=2, CAT=3, EXIT=4};
+char *cmdstr[] = {"cd", "pwd", "ls", "cat", "exit"};
 
 void split_up2(char* command, char** params, int* paramnum);
 int execute(char** params, int paramnum);
@@ -22,7 +23,9 @@ int main(){
         fgets(command, sizeof(command), stdin);   
         if(command[strlen(command)-1] == '\n') command[strlen(command)-1] = '\0';   
         split_up2(command, params, &paramnum);
-        execute(params, paramnum);
+        if(execute(params, paramnum) == 1){
+            break;
+        }
 
     }
 }
@@ -48,7 +51,11 @@ int execute(char** params, int paramnum){
     }
     switch(i){
         case CD:
-            printf("you selected cd\n");
+            printf("you selected cd\n"); 
+            if(paramnum > 2){
+                printf("too many arguments\n");
+                break;
+            }
             if(chdir(params[1]) < 0){
                 fprintf(stderr, "cannot cd %s\n", params[1]);
             }
@@ -58,25 +65,25 @@ int execute(char** params, int paramnum){
             break;
         case LS:
             printf("you selected ls\n");
-            struct dirent *direct;
-            DIR *dr = opendir(".");
-            if (dr == NULL)
-            {
-                printf("Could not open current directory" );
-                return 0;
+            if(paramnum == 1){
+                ls();
             }
-            while ((direct = readdir(dr)) != NULL)
-                    printf("%s\n", direct->d_name);
-        
-            closedir(dr);
+            
             break;
         case CAT:
             printf("you selected cat\n");
-            if(strcmp(params[2], ">") == 0){
+            if(paramnum<3){
+                cat(params[1], ' ', " ");
+            }else if(strcmp(params[2], "<") == 0){
+                cat(params[1], '<', params[3]);
+            }else if(strcmp(params[2], ">") == 0){
                 cat(params[1], '>', params[3]);
             }
-            cat(params[1], ' ', " ");
+        case EXIT:
+            printf("exiting...\n");
+            return 1;
     }
+    return 0;
     
 }
 
