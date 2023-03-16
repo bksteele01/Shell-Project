@@ -64,7 +64,7 @@ int cat(char* file, char operator, char* redirfile){
     }
 
     //wait for child
-    if(pid > 0){
+    if(pid > 0 && operator != '&'){
         wait(NULL);
     }
     return 1;

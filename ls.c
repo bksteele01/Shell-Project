@@ -32,7 +32,8 @@ int ls(char operator, char* file){
         closedir(dr);
         exit(1);
     }
-    if(pid > 1){
+    if(pid > 0 && operator != '&'){
+        printf("XXX\n");
         wait(NULL);
     }
     return 0;
