@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <signal.h>
 #include <fcntl.h>
+#include "pwd.h"
 
 #define LINES 200
 
@@ -38,27 +39,28 @@ int main(){
     while(1){
 	signal(SIGINT, handler);
 	memset(line, 0, LINES);
-        paramnum = 0;
-        char* user = getenv("USER");
-        printf("%s@shell>", user);
-        fgets(command, sizeof(command), stdin);   
-        if(command[strlen(command)-1] == '\n'){
-	       	command[strlen(command)-1] = '\0';
+    paramnum = 0;
+    char* user = getenv("USER");
+    printf("%s@shell>", user);
+    fgets(command, sizeof(command), stdin);   
+    if(command[strlen(command)-1] == '\n'){
+        command[strlen(command)-1] = '\0';
 	}	
 	// this will allow the program to terminate on control d 
 	if (fgets(line, LINES, stdin) == 0){
 		break;
-		}
-        split_up2(command, params, &paramnum);
-        if(execute(params, paramnum) == 1){
-            break;
-        }
+	}
+    split_up2(command, params, &paramnum);
+    if(execute(params, paramnum) == 1){
+        break;
+    }
 
     }
 }
 
 // handler function for signal handler 
-void handler (int sig){#include <fcntl.h>
+#include <fcntl.h>
+void handler (int sig){
    stop = 1;
 }
 
@@ -75,7 +77,7 @@ void split_up2(char* command, char** params, int* paramnum){
 int execute(char** params, int paramnum){
     int ncmds = sizeof(cmdstr) / sizeof(char *);
     int i;
-
+    //match command with one out of the list
     for(i=0;i<ncmds;i++){
         if(strcmp(params[0], cmdstr[i]) == 0){
             break;
@@ -83,44 +85,71 @@ int execute(char** params, int paramnum){
     }
     switch(i){
         case CD:
-            printf("you selected cd\n"); 
+            //more than 2 arguments
             if(paramnum > 2){
                 printf("too many arguments\n");
                 break;
             }
+
+            //change directory, or print error if directory not available
             if(chdir(params[1]) < 0){
                 fprintf(stderr, "cannot cd %s\n", params[1]);
             }
             break;
         case PWD:
-            printf("you selected pwd\n");
-            char path[200];
-	    // get the current directory path and print it 
-            getcwd(path, 200);
-            printf("%s\n", path);
+            //regular pwd command. No redirect
+            if(paramnum < 2){
+                pwd(' ', " ");
+                break;
+            
+            // redirect symbol, and has three arguments, redirect the
+            // output to the specified file
+            }else if(strcmp(params[1], ">") == 0 && paramnum == 3){
+                pwd('>', params[2]);
+                break;
+            }
+            printf("too many arguments\n");
             break;
         case LS:
-            printf("you selected ls\n");
+            //regular ls command with no arguments
             if(paramnum == 1){
-                ls();
-            }
-            
+                ls(' ', " ");
+                break;
+
+            //ls with redirect. Has symbol as argument, and arguments total to three
+            }else if(strcmp(params[1], ">") == 0 && paramnum == 3){
+                ls('>', params[2]);
+                break;
+            }      
+            printf("too many arguments\n"); 
             break;
-        case CAT:
-            printf("you selected cat\n");
+        case CAT:      
+            //regular cat command, with just file as argument  
             if(paramnum<3){
                 cat(params[1], ' ', " ");
-            }else if(strcmp(params[2], "<") == 0){
-                cat(params[1], '<', params[3]);
+                break;
+
+            //cat command with output redirect. redirect symbol, and the two files as arguments
             }else if(strcmp(params[2], ">") == 0){
                 cat(params[1], '>', params[3]);
+                break;
             }
+
+            //cat command with input redirect. redirect symbol, and file contents
+            //to use as argument.
+            if(strcmp(params[1], "<") == 0){
+                cat(params[1], '<', params[2]);
+                break;
+            }
+            printf("too many arguments\n");
+            break;
         case EXIT:
             printf("exiting...\n");
+            //return 1 to signal loop to break
             return 1;
+        
     }
     return 0;
-    
 }
 
 

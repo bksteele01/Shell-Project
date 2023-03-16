@@ -1,0 +1,1 @@
+int pwd(char operator, char* file);
