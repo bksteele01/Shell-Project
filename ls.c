@@ -6,7 +6,19 @@
 #include <fcntl.h>
 #include<sys/wait.h>
 
-int ls(char operator, char* file){
+int ls(char operator, char* file, int thef[]){
+    if(operator == '|'){
+        close(thef[0]);
+        write(thef[1], "TESTX", 6);
+        close(thef[1]);
+        wait(NULL);
+        return 0;
+    }
+
+
+
+
+
     //fork
     int pid = fork();
     if(pid < 0){

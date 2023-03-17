@@ -76,29 +76,43 @@ void split_up2(char* command, char** params, int* paramnum){
 }
 
 void pipeStuff(char *in, char *out){
-	int p[2]; 
-	pipe(p);
-	char *excargv[10] = {0};
-	if (fork() == 0){
-		close(out);
-		close(p[0]);
-		dup2(p[1], out); 
-		execvp(excargv[0], excargv);
-	}
-	if (fork() == 0) {
-		close(in); 
-		close(p[1]); 
-		dup2(p[0], in);
-	       execvp(excargv[1], excargv);  	
-	}
-	close(p[0]); 
-	close(p[1]); 
+	// int p[2]; 
+	// pipe(p);
+	// char *excargv[10] = {0};
+	// if (fork() == 0){
+	// 	close(out);
+	// 	close(p[0]);
+	// 	dup2(p[1], out); 
+	// 	execvp(excargv[0], excargv);
+	// }
+	// if (fork() == 0) {
+	// 	close(in); 
+	// 	close(p[1]); 
+	// 	dup2(p[0], in);
+	//        execvp(excargv[1], excargv);  	
+	// }
+	// close(p[0]); 
+	// close(p[1]); 
+
+    if(strcmp(in, "ls") == 0 && strcmp(out, "cat") == 0){
+        int fd[2];
+        if (pipe(fd)==-1) { 
+            fprintf(stderr, "Pipe Failed" ); 
+        }
+        int testfork = fork();
+        if(testfork > 0){
+            ls('|', " ", fd);
+        }else{
+            cat(" ", '|', " ", fd);
+        }
+    }
 }
 
 int execute(char** params, int paramnum){
     int ncmds = sizeof(cmdstr) / sizeof(char *);
     int i;
-    int p[2];
+    int test[2];
+    // int p[2];
     //match command with one out of the list
     for(i=0;i<ncmds;i++){
         if(strcmp(params[0], cmdstr[i]) == 0){
@@ -135,47 +149,47 @@ int execute(char** params, int paramnum){
         case LS:
             //regular ls command with no arguments
             if(paramnum == 1){
-                ls(' ', " ");
+                ls(' ', " ", test);
                 break;
 
             //ls with redirect. Has symbol as argument, and arguments total to three
             }else if(strcmp(params[1], ">") == 0 && paramnum == 3){
-                ls('>', params[2]);
+                ls('>', params[2], test);
                 break;
 
             //run process in background
             }else if(strcmp(params[1], "&") == 0 && paramnum == 2){
-                ls('&', " ");
+                ls('&', " ", test);
                 break;
             }      
-	    else if (strcmp(params[1], "|") == 0 && paramnum == 3){
-		    pipeStuff(params[0], params[2]);
-		    break;
-	    }
+            else if (strcmp(params[1], "|") == 0 && paramnum == 3){
+                pipeStuff(params[0], params[2]);
+                break;
+            }
             printf("too many arguments\n"); 
             break;
         case CAT:      
             //regular cat command, with just file as argument  
             if(paramnum<3){
-                cat(params[1], ' ', " ");
+                cat(params[1], ' ', " ", test);
                 break;
 
             //cat command with output redirect. redirect symbol, and the two files as arguments
             }else if(strcmp(params[2], ">") == 0){
-                cat(params[1], '>', params[3]);
+                cat(params[1], '>', params[3], test);
                 break;
             }
 
             //cat command with input redirect. redirect symbol, and file contents
             //to use as argument.
             if(strcmp(params[1], "<") == 0){
-                cat(params[1], '<', params[2]);
+                cat(params[1], '<', params[2], test);
                 break;
             }
 
             //run process in background
             if(strcmp(params[2], "&") == 0){
-                cat(params[1], '&', " ");
+                cat(params[1], '&', " ", test);
                 break;
             }
 

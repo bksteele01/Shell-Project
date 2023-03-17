@@ -7,7 +7,17 @@
 #include<sys/wait.h>
 
 
-int cat(char* file, char operator, char* redirfile){
+int cat(char* file, char operator, char* redirfile, int thef[]){
+    if(operator == '|'){
+        close(thef[1]);
+        char test[10];
+        read(thef[0], test, 10);
+        printf("%s\n", test);
+        exit(1);
+        return 0;
+    }
+
+
     //fork
     int pid = fork();
     if(pid < 0){

@@ -1,1 +1,1 @@
-int ls(char operator, char* file);
+int ls(char operator, char* file, int thef[]);
