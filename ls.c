@@ -7,13 +7,13 @@
 #include<sys/wait.h>
 
 int ls(char operator, char* file, int thef[]){
-    if(operator == '|'){
-        close(thef[0]);
-        write(thef[1], "TESTX", 6);
-        close(thef[1]);
-        wait(NULL);
-        return 0;
-    }
+//    if(operator == '|'){
+  //      close(thef[0]);
+    //    write(thef[1], "TESTX", 6);
+      //  close(thef[1]);
+      //  wait(NULL);
+      //  return 0;
+  //  }
 
 
 
@@ -44,6 +44,19 @@ int ls(char operator, char* file, int thef[]){
             }
             dup2(outfd, 1);
         }
+	if(operator == '|'){
+	  char val[1000000];
+
+	  while ((direct = readdir(dr)) != NULL){
+           strcat(val, direct->d_name);
+	   strcat(val, "\n");
+	  }
+           close(thef[0]);
+           write(thef[1], val, 1000000);
+           close(thef[1]);
+           wait(NULL);
+           return 0;
+         }
 
         //print directory contents, and then exit process
         while ((direct = readdir(dr)) != NULL)
