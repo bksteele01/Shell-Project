@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include "pwd.h"
+#include<sys/wait.h>
 
 #define LINES 200
 
@@ -37,23 +38,23 @@ int main(){
     } 
 
     while(1){
-	signal(SIGINT, handler);
-	memset(line, 0, LINES);
-    paramnum = 0;
-    char* user = getenv("USER");
-    printf("%s@shell>", user);
-    fgets(command, sizeof(command), stdin);   
-    if(command[strlen(command)-1] == '\n'){
-        command[strlen(command)-1] = '\0';
-	}	
-	// this will allow the program to terminate on control d 
-	if (fgets(line, LINES, stdin) == 0){
-		break;
-	}
-    split_up2(command, params, &paramnum);
-    if(execute(params, paramnum) == 1){
-        break;
-    }
+        signal(SIGINT, handler);
+        memset(line, 0, LINES);
+        paramnum = 0;
+        char* user = getenv("USER");
+        printf("%s@shell>", user);
+        fgets(command, sizeof(command), stdin);   
+        if(command[strlen(command)-1] == '\n'){
+            command[strlen(command)-1] = '\0';
+        }	
+        // this will allow the program to terminate on control d 
+        if (fgets(line, LINES, stdin) == 0){
+            break;
+        }
+        split_up2(command, params, &paramnum);
+        if(execute(params, paramnum) == 1){
+            break;
+        }
 
     }
 }
@@ -141,6 +142,11 @@ int execute(char** params, int paramnum){
             }else if(strcmp(params[1], ">") == 0 && paramnum == 3){
                 ls('>', params[2]);
                 break;
+
+            //run process in background
+            }else if(strcmp(params[1], "&") == 0 && paramnum == 2){
+                ls('&', " ");
+                break;
             }      
 	    else if (strcmp(params[1], "|") == 0 && paramnum == 3){
 		    pipeStuff(params[0], params[2]);
@@ -166,6 +172,13 @@ int execute(char** params, int paramnum){
                 cat(params[1], '<', params[2]);
                 break;
             }
+
+            //run process in background
+            if(strcmp(params[2], "&") == 0){
+                cat(params[1], '&', " ");
+                break;
+            }
+
             printf("too many arguments\n");
             break;
         case EXIT:

@@ -14,10 +14,11 @@ int cat(char* file, char operator, char* redirfile){
         printf("fork failed\n");
     }
 
-    //child
+    //child makes operations
     if(pid == 0){
-        //open file
-        
+
+        //if input redirection, take file name from specified file
+        //instead of through argument
         if(operator == '<'){
             int infd;
             if((infd = open(redirfile, O_RDONLY, 0644)) < 0) {
@@ -30,6 +31,8 @@ int cat(char* file, char operator, char* redirfile){
                 file[strlen(file)-1] = '\0';
 	        }	
         }
+
+        //open file
         FILE *catfile;
         catfile = fopen(file, "r");
         
@@ -40,8 +43,7 @@ int cat(char* file, char operator, char* redirfile){
         char characters = fgetc(catfile);
         
 
-        //setting up redirection
-        //if output redirect char, redirect
+        //if output redirect, hook stdout to file
         if(operator == '>'){
             int outfd;
             if ((outfd = open(redirfile, O_CREAT|O_TRUNC|O_WRONLY, 0644)) < 0) {
@@ -51,20 +53,20 @@ int cat(char* file, char operator, char* redirfile){
             dup2(outfd, 1);
         }
 
-        //print
+        //print file contents
         while(characters != EOF){
             printf("%c", characters);
             characters = fgetc(catfile);
         }
 
-        //close file and exit
+        //close file and exit process
         fclose(catfile);
         exit(1);
         
     }
 
-    //wait for child
-    if(pid > 0){
+    //parent waits for child
+    if(pid > 0 && operator != '&'){
         wait(NULL);
     }
     return 1;
